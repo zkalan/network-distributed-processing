@@ -1,7 +1,7 @@
 /**
  * My Echo Client
  */
-package ftp;
+package lab1.ftp;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

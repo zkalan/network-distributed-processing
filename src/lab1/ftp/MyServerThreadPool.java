@@ -1,4 +1,4 @@
-package ftp;
+package lab1.ftp;
 
 import java.io.IOException;
 import java.net.ServerSocket;

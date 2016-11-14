@@ -3,7 +3,7 @@
  * 《网络与分布计算》
  * 第一次实验课
  */
-package ftp;
+package lab1.ftp;
 
 import java.io.IOException;
 import java.net.InetAddress;

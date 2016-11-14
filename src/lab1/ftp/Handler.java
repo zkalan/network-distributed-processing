@@ -2,7 +2,7 @@
  * 这是服务器工作线程
  * 2016年11月13日
  */
-package ftp;
+package lab1.ftp;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
