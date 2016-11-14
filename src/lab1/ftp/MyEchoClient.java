@@ -12,7 +12,6 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Scanner;
 
 public class MyEchoClient {
 	
@@ -52,11 +51,15 @@ public class MyEchoClient {
 				//发送消息至服务器
 				pw.println(msg);
 				//接收服务器反馈的消息
-				System.out.println("Server@" + HOST + ":" + PORT + ">" + br.readLine());
 				if (msg.equals("quit")){
 					//退出
 					break;
 				}
+				String recStr = null;
+				recStr = br.readLine();
+				//while ((recStr = br.readLine()) != null){
+					System.out.println(recStr);
+				//} 
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

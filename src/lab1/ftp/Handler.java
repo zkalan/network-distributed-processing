@@ -6,6 +6,7 @@ package lab1.ftp;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -50,10 +51,31 @@ public class Handler implements Runnable {
 			initStream();
 			String info = null;
 			while (null != (info = br.readLine())){
-				System.out.println("Client@" + socket.getInetAddress() + ":" + socket.getPort() + ">" + info);
+				System.out.println("Client" + socket.getInetAddress() + ":" + socket.getPort() + ">" + info);
 				pw.println( info );
 				if (info.equals("quit")){
 					break;
+				}
+				if (!info.equals("ls")){
+					StringBuilder dirs = new StringBuilder();
+					String dir = System.getProperty("user.dir") + "\\"+ info;
+					File[] files = fileList(dir);
+					String flag = null;
+					for (int i = 0;i < files.length;i++){
+						if (files[i].isDirectory()){
+							flag = "<D>";
+						} else {
+							flag = "<F>";
+						}
+						//dirs.append("\t");
+						dirs.append(flag);
+						dirs.append("        ");
+						dirs.append(files[i].getName());
+						dirs.append("\n");
+					}
+					pw.println(dirs.toString());
+					//bw.write(dirs.toString());
+					//bw.flush();
 				}
 			}
 		}catch (IOException e){
@@ -69,6 +91,12 @@ public class Handler implements Runnable {
 			}
 			
 		}
+	}
+	
+	public File[] fileList(String lsDir){
+		File dir = new File(lsDir);
+		File[] files = dir.listFiles();
+		return files;
 	}
 	
 
