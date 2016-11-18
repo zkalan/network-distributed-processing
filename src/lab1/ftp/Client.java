@@ -21,6 +21,8 @@ public class Client {
 	static final String HOST = "127.0.0.1";
 	//建立客户端套接字
 	Socket socket = new Socket();
+	//根目录
+	String currentDir = System.getProperty("user.dir");
 	
 	public Client() throws IOException{
 		//也可以在此创建客户端套接字，有待试验
@@ -34,6 +36,7 @@ public class Client {
 	 */
 	public void send(){
 		try{
+			System.out.print("Client" + currentDir.replace(System.getProperty("user.dir"), "/").replace("\\", "/") + ">");
 			//建立客户端输出流，向服务器发送数据
 			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 			//建立客户端输入流，接收服务器的数据
@@ -47,20 +50,34 @@ public class Client {
 			BufferedReader cin = new BufferedReader(new InputStreamReader(System.in));
 			//用户的输入
 			String msg = null;
+			//局部变量
+			String recStr = null;
+			String serverResp = null;
+			int beginIndex = 0;
+			int endIndex = 0;
 			while ((msg = cin.readLine()) != null){
 				//发送消息至服务器
-				//String[] gsh = msg.split(" ");
-				pw.println(msg);
-				//接收服务器反馈的消息
 				if (msg.equals("quit")){
 					//退出
+					System.out.println("quit Success");
 					break;
+				} else if (createClientWrite(msg) != null) {
+					pw.println(createClientWrite(msg)); 
+					//接收服务器回复信息并且输出
+					serverResp = br.readLine();
+					
+					//更新currentDir
+					beginIndex = serverResp.indexOf("[")+1;  
+					endIndex = serverResp.lastIndexOf("]");
+					currentDir = serverResp.substring(beginIndex,endIndex);
+					
+					
+					recStr = serverResp.substring(serverResp.indexOf("{")+1,serverResp.lastIndexOf("}")).replaceAll("&sdfg45sdfgnjk4", "\n");
+					System.out.println("Client " + recStr);
+				} else {
+					System.out.println("Please check the Input command");
 				}
-				String recStr = null;
-				recStr = br.readLine().replace("\123", "\n");
-				//while ((recStr = br.readLine()) != null){
-					System.out.println(recStr);
-				//} 
+				System.out.print("Client" + currentDir.replace(System.getProperty("user.dir"), "/").replace("\\", "/") + ">");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -75,6 +92,41 @@ public class Client {
 			}
 		}
 	}
+	
+	//用户命令格式化
+	public String createClientWrite(String msg){
+		
+		String[] customInput = msg.split("\\s+");
+		StringBuilder clientWrite = new StringBuilder();
+		
+		if (customInput[0].equals("cd") && 2 == customInput.length && !customInput[1].equals("..")) {
+			clientWrite.append(customInput[0]);
+			clientWrite.append(" ");
+			clientWrite.append(customInput[1]);
+		} else if (customInput[0].equals("get")&& 2 == customInput.length)  {
+			clientWrite.append(customInput[0]);
+			clientWrite.append(" ");
+			clientWrite.append(customInput[1]);
+		} else if (customInput[0].equals("cd..") && 1 == customInput.length){
+			clientWrite.append(customInput[0]);
+			clientWrite.append(" ");
+			clientWrite.append("");
+		} else if (customInput[0].equals("ls") && 1 == customInput.length){
+			clientWrite.append(customInput[0]);
+			clientWrite.append(" ");
+			clientWrite.append("");
+		} else if (customInput[0].equals("quit") && 1 == customInput.length){
+			return "quit";
+		} else {
+			return null;
+		}
+		return clientWrite.toString();
+	}
+	
+	//客户端格式化输出
+	public void clientPrint(String printContent){
+		System.out.println();
+	}
 
 	/**
 	 * @param args
@@ -82,7 +134,7 @@ public class Client {
 	 */
 	public static void main(String[] args) throws IOException,UnknownHostException {
 		
-		new MyEchoClient().send();
+		new Client().send();
 		
 	}
 
