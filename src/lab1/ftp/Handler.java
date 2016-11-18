@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.text.DecimalFormat;
 
 /**
  * 单个进程负责与单个用户通信
@@ -21,6 +22,7 @@ import java.net.Socket;
 public class Handler implements Runnable {
 	
 	private Socket socket;
+	String currentDir = System.getProperty("user.dir");
 	
 	BufferedWriter bw;
 	BufferedReader br;
@@ -52,30 +54,25 @@ public class Handler implements Runnable {
 			String info = null;
 			while (null != (info = br.readLine())){
 				System.out.println("Client" + socket.getInetAddress() + ":" + socket.getPort() + ">" + info);
-				pw.println( info );
+				
+				//分析用户输入
+				String[] customInput = info.split(" ");
+				
 				if (info.equals("quit")){
 					break;
-				}
-				if (!info.equals("ls")){
-					StringBuilder dirs = new StringBuilder();
-					String dir = System.getProperty("user.dir") + "\\"+ info;
-					File[] files = fileList(dir);
-					String flag = null;
-					for (int i = 0;i < files.length;i++){
-						if (files[i].isDirectory()){
-							flag = "<D>";
-						} else {
-							flag = "<F>";
-						}
-						//dirs.append("\t");
-						dirs.append(flag);
-						dirs.append("        ");
-						dirs.append(files[i].getName());
-						dirs.append("\n");
+				} else {
+					switch (customInput[0]) {
+					case "ls" : fileList();
+					case "cd" : System.out.println(customInput[1]);
+					case "get" : getFile();
+					case "\n" : pw.println("\n");
+					default :
+						pw.println(customInput[0] + "\n");
+					
 					}
-					pw.println(dirs.toString());
-					//bw.write(dirs.toString());
-					//bw.flush();
+				}
+				if (info.equals("ls")){
+
 				}
 			}
 		}catch (IOException e){
@@ -93,11 +90,57 @@ public class Handler implements Runnable {
 		}
 	}
 	
-	public File[] fileList(String lsDir){
-		File dir = new File(lsDir);
+	public void cd(String childDir) {
+		// TODO Auto-generated method stub
+		currentDir = currentDir + "\\" + childDir;
+	}
+
+	public void getFile() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void fileList() throws IOException{
+
+		StringBuilder dirs = new StringBuilder();
+		File dir = new File(currentDir);
 		File[] files = dir.listFiles();
-		return files;
+		String flag = null;
+		String temp = currentDir;
+		//首部信息
+		dirs.append("当前目录" + "/" + temp.replace(System.getProperty("user.dir"), "/").replace("\\", "/") + "\123");
+		
+		for (int i = 0;i < files.length;i++){
+			if (files[i].isDirectory()){
+				flag = "<D>";
+			} else {
+				flag = "<F>";
+			}
+			dirs.append(flag + "        " + files[i].getName() + "        " + getFileSize(files[i]) + "\123");
+		}
+		pw.println(dirs.toString());
 	}
 	
-
+	public static String getFileSize(File file){
+		
+		String size = "";
+		if (file.exists() && file.isFile()) {
+			long files = file.length();
+			DecimalFormat df = new DecimalFormat("#.00");
+			if (files < 1024) {
+				size = df.format((double)files) + "B";
+			} else if (files < 1048576) {
+				size = df.format((double)files/1024) + "KB";
+			} else if (files < 1073741824) {
+				size = df.format((double)files/1048576) + "MB";
+			} else {
+				size = df.format((double)files/1073741824) + "GB";
+			}
+		} else if (file.exists() && file.isDirectory()) {
+			size = "";
+		} else {
+			size = "0B";
+		}
+		return size;
+	}
 }

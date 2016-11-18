@@ -13,7 +13,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class MyEchoClient {
+public class Client {
 	
 	//连接的端口
 	static final int PORT = 8080;
@@ -22,7 +22,7 @@ public class MyEchoClient {
 	//建立客户端套接字
 	Socket socket = new Socket();
 	
-	public MyEchoClient() throws IOException{
+	public Client() throws IOException{
 		//也可以在此创建客户端套接字，有待试验
 		//socket = new Socket(HOST,PORT);
 		socket = new Socket();
@@ -49,6 +49,7 @@ public class MyEchoClient {
 			String msg = null;
 			while ((msg = cin.readLine()) != null){
 				//发送消息至服务器
+				//String[] gsh = msg.split(" ");
 				pw.println(msg);
 				//接收服务器反馈的消息
 				if (msg.equals("quit")){
