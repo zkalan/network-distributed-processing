@@ -12,6 +12,7 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.regex.Pattern;
 
 public class Client {
 	
@@ -98,8 +99,10 @@ public class Client {
 		
 		String[] customInput = msg.split("\\s+");
 		StringBuilder clientWrite = new StringBuilder();
+		String regEx = "\\s+";
 		
-		if (customInput[0].equals("cd") && 2 == customInput.length && !customInput[1].equals("..")) {
+		if (customInput[0].equals("cd") && 2 == customInput.length 
+				&& !Pattern.compile(regEx).matcher(customInput[1]).find()) {
 			clientWrite.append(customInput[0]);
 			clientWrite.append(" ");
 			clientWrite.append(customInput[1]);
