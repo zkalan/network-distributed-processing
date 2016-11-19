@@ -53,6 +53,9 @@ public class Handler implements Runnable {
 			
 			//初始化输入输出流的对象
 			initStream();
+			
+			pw.println("[" + System.getProperty("user.dir") + "]" + "{connect success}");
+			
 			String info = null;
 			
 			while (null != (info = br.readLine())){
@@ -61,6 +64,10 @@ public class Handler implements Runnable {
 				System.out.println("Client" + socket.getInetAddress() + ":" + socket.getPort() + ">" + info);
 				
 				if (info.equals("quit")){
+					//断开连接
+					socket.close();
+					System.out.println("Client" + socket.getInetAddress() + ":" + socket.getPort() + ">" + info);
+					System.out.println("quit success");
 					break;
 				} else {
 					String result = selectCommand(info);
@@ -124,7 +131,7 @@ public class Handler implements Runnable {
 			currentDir = bCurrent.toString();
 			return "[" + currentDir + "]{Success}";
 		}
-		return "[" + currentDir + "]{Please check your command}";
+		return "[" + currentDir + "]{The current path is the root directory}";
 	}
 
 	public String cd(String childDir) {
@@ -134,7 +141,7 @@ public class Handler implements Runnable {
 			currentDir = currentDir + "\\" + childDir;
 			return "[" + currentDir + "]{Success}";
 		} else {
-			return "[" + currentDir + "]{Please check your command}";
+			return "[" + currentDir + "]{" + childDir +" does not Exist or is not Dir}";
 		}
 	}
 
