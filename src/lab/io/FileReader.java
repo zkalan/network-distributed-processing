@@ -17,7 +17,7 @@ import java.io.UnsupportedEncodingException;
 public class FileReader {
 
 	public static void main(String[] args) {
-		File f=new File("message.txt");  
+		File f = new File("message.txt");
 		BufferedReader br = null;
 		try {
 			br=new BufferedReader(

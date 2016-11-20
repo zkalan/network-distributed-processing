@@ -5,22 +5,33 @@ package lab1.ftp;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 
 public class Client {
 	
-	//连接的端口
+	//tcp连接的端口
 	static final int PORT = 8080;
+	//udp连接的端口
+	static final String uPORT = "8081";
 	//连接地址
 	static final String HOST = "127.0.0.1";
 	//建立客户端套接字
 	Socket socket = new Socket();
+	
+	BufferedWriter bw;
+	BufferedReader br;
+	PrintWriter pw;
+	
 	//根目录
 	String currentDir = "/";
 	String root = null;
@@ -30,6 +41,13 @@ public class Client {
 		//socket = new Socket(HOST,PORT);
 		socket = new Socket();
 		socket.connect(new InetSocketAddress(HOST,PORT));
+		//建立客户端输出流，向服务器发送数据
+		bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+		//建立客户端输入流，接收服务器的数据
+		br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		
+		//装饰输出流，即时刷新
+		pw = new PrintWriter(bw,true);
 	}
 	
 	/**
@@ -38,13 +56,6 @@ public class Client {
 	public void send(){
 		try{
 			System.out.print("Client />");
-			//建立客户端输出流，向服务器发送数据
-			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-			//建立客户端输入流，接收服务器的数据
-			BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			
-			//装饰输出流，即时刷新
-			PrintWriter pw = new PrintWriter(bw,true);
 			//接受用户输入的信息
 			BufferedReader cin = new BufferedReader(new InputStreamReader(System.in));
 			//用户的输入
@@ -54,6 +65,12 @@ public class Client {
 			String serverResp = null;
 			int beginIndex = 0;
 			int endIndex = 0;
+			long fileLength = 0;
+			//客户端回复给服务器的字符串
+			String clientToServer = null;
+			
+			//向服务器发送UDP端口
+			pw.println(uPORT);
 			
 			//截取服务器根目录
 			String serverRoot = br.readLine();
@@ -72,7 +89,8 @@ public class Client {
 					break;
 				} else if (createClientWrite(msg) != null) {
 					//发送消息至服务器
-					pw.println(createClientWrite(msg)); 
+					clientToServer = createClientWrite(msg);
+					pw.println(clientToServer); 
 					
 					//接收服务器回复信息并且输出
 					serverResp = br.readLine();
@@ -82,14 +100,28 @@ public class Client {
 					endIndex = serverResp.lastIndexOf("]");
 					currentDir = serverResp.substring(beginIndex,endIndex);
 					
+					String[] analyMsg = clientToServer.split("\\s+");
+					if (analyMsg[0].equals("get")){
+						beginIndex = serverResp.indexOf("(")+1;  
+						endIndex = serverResp.lastIndexOf(")");
+						if (serverResp.substring(beginIndex,endIndex).equals("-1")){
+							System.out.println("file does not exist. check the input command");
+						} else {
+							fileLength = Integer.parseInt(serverResp.substring(beginIndex,endIndex));
+							receFileByUdp(analyMsg[1],fileLength);
+						}
+					}
+					
+					
 					
 					recStr = serverResp.substring(serverResp.indexOf("{")+1,serverResp.lastIndexOf("}"))
 							.replace(root, "/")
 							.replace("&sdfg45sdfgnjk4", "\n");
 					System.out.println(recStr);
 				} else {
-					System.out.println("Please check the Input command");
+					System.out.println("Please Input command");
 				}
+				//输出用户的当前的目录
 				System.out.print("Client " + currentDir.replace(root, "/").replace("\\", "/") + ">");
 			}
 		} catch (IOException e) {
@@ -107,7 +139,7 @@ public class Client {
 	}
 	
 	//用户命令格式化
-	public String createClientWrite(String msg){
+	public String createClientWrite(String msg) throws SocketException {
 		
 		String[] customInput = msg.split("\\s+");
 		StringBuilder clientWrite = new StringBuilder();
@@ -170,6 +202,38 @@ public class Client {
 	    } else {
 	    	return true;
 	    }
+	}
+	
+	public void receFileByUdp(String fileName,long fileLength) throws IOException {
+		
+		System.out.println("file being ready");
+		System.out.println("fileLength:" + fileLength);
+		DatagramSocket udpSocket;
+		byte[] buffer = new byte[1024];
+		long bytesReceived = 0;
+		DatagramPacket receivedPacket;
+		FileOutputStream fileWriter;
+		try {
+			udpSocket = new DatagramSocket(8081);
+			fileWriter = new FileOutputStream(Class.class.getClass().getResource("/").getPath() + "\\" + fileName);
+			receivedPacket = new DatagramPacket(buffer, buffer.length);
+			pw.println("ok");
+			while (bytesReceived < fileLength) {
+				udpSocket.receive(receivedPacket);
+				fileWriter.write(receivedPacket.getData(),0,receivedPacket.getLength());
+				bytesReceived = bytesReceived + receivedPacket.getLength();
+				pw.println("ok");
+			}
+			fileWriter.close();
+			udpSocket.close();
+			if (bytesReceived == fileLength) {
+				System.out.println("File download success");
+			}
+			//System.out.println("file download success");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 }

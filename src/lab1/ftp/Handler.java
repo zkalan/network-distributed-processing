@@ -7,11 +7,16 @@ package lab1.ftp;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.text.DecimalFormat;
 
 /**
@@ -23,6 +28,7 @@ public class Handler implements Runnable {
 	
 	private Socket socket;
 	String currentDir = System.getProperty("user.dir");
+	int uPORT = 0;
 	
 	BufferedWriter bw;
 	BufferedReader br;
@@ -54,6 +60,10 @@ public class Handler implements Runnable {
 			//初始化输入输出流的对象
 			initStream();
 			
+			//读取客户端发送的UDP端口
+			uPORT = Integer.parseInt(br.readLine());
+			System.out.println("UDP port " + uPORT);
+			
 			pw.println("[" + System.getProperty("user.dir") + "]" + "{connect success}");
 			
 			String info = null;
@@ -72,7 +82,13 @@ public class Handler implements Runnable {
 				} else {
 					String result = selectCommand(info);
 					System.out.println("Server print>" + result);
-					pw.println(result);
+					if (result.equals("-1")) {
+						pw.println("[" + currentDir + "]{Download failed.&sdfg45sdfgnjk4}");
+					} else if (result.equals("[" + currentDir + "]{Is not File&sdfg45sdfgnjk4}")){
+						pw.println(result);
+					} else {
+						pw.println(result);
+					}
 					}
 				}
 			} catch (IOException e) {
@@ -107,8 +123,10 @@ public class Handler implements Runnable {
 			result = cd(customInput[1]);
 		} else if (customInput[0].equals("get")) {
 			//下载文件
-			getFile(customInput[1]);
-			result = "File " + customInput[1] + "is downlaoding";
+			//-1
+			//success
+			//is not file
+			result = getFile(customInput[1]);
 		} else if (customInput[0].equals("cd..")){
 			//返回目录
 			result = backDir();
@@ -145,9 +163,78 @@ public class Handler implements Runnable {
 		}
 	}
 
-	public void getFile(String command2) {
-		// TODO Auto-generated method stub
+	public String getFile(String fileName) throws IOException {
+		String temp = currentDir + "\\" + fileName;
+		File dir = new File(temp);
+		String result = null;
+		if (dir.isFile()){
+			result = transFileByUdp(temp);
+			return result;
+		} else {
+			return "[" + currentDir + "]{Is not File&sdfg45sdfgnjk4}";
+		}
+	}
+
+	
+	/**
+	 * 
+	 * @param filePath
+	 * @throws IOException
+	 */
+	public String transFileByUdp(String filePath) throws IOException{
+		String result = null;
+		DatagramSocket udpSocket;
+		FileInputStream fileReader = new FileInputStream(filePath);
+		long fileLength = fileReader.available();
 		
+		//回复客户端
+		pw.println("["+ currentDir + "]" 
+				+ "{The file is in place. Available for download&sdfg45sdfgnjk4file length }" 
+				+ "(" + Long.toString(fileLength) + ")");
+		System.out.println("[" + currentDir + "]{" 
+				+ "The file is in place. Available for download&sdfg45sdfgnjk4file length " 
+				+ "}(" + Long.toBinaryString(fileLength) + ")");
+		
+		//等待客户端回复
+		String clientReply = br.readLine();
+		System.out.println("clientReply: " + clientReply);
+		if (clientReply != null && clientReply.equals("ok")) {
+			InetAddress toAddress = InetAddress.getByName("localhost");
+			long currentPos = 0, bytesRead;
+			
+			byte[] msg = new byte[1024];
+			
+			try {
+				udpSocket = new DatagramSocket(8079);
+				udpSocket.connect(toAddress, uPORT);
+				
+				DatagramPacket packet = new DatagramPacket(msg, msg.length);
+				
+				
+				while (currentPos < fileLength) {
+					bytesRead = fileReader.read(msg);
+					udpSocket.send(packet);
+					currentPos = currentPos + bytesRead;
+					if (!br.readLine().equals("ok")) {
+						udpSocket.close();
+						fileReader.close();
+						return "-1";
+					}
+				}
+				udpSocket.close();
+				fileReader.close();
+			} catch (SocketException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			System.out.println("Downlaod success");
+			result = "[" + currentDir + "]{" + "Downlaod success&sdfg45sdfgnjk4file length " + "}(" + Long.toBinaryString(fileLength) + ")";
+		} else {
+			System.out.println("Downlaod failed");
+			result = "-1";
+		}
+		return result;
 	}
 
 	/**
