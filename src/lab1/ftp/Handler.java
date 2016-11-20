@@ -193,7 +193,7 @@ public class Handler implements Runnable {
 				+ "(" + Long.toString(fileLength) + ")");
 		System.out.println("[" + currentDir + "]{" 
 				+ "The file is in place. Available for download&sdfg45sdfgnjk4file length " 
-				+ "}(" + Long.toBinaryString(fileLength) + ")");
+				+ "}(" + Long.toString(fileLength) + ")");
 		
 		//等待客户端回复
 		String clientReply = br.readLine();
@@ -229,7 +229,7 @@ public class Handler implements Runnable {
 				e.printStackTrace();
 			}
 			System.out.println("Downlaod success");
-			result = "[" + currentDir + "]{" + "Downlaod success&sdfg45sdfgnjk4file length " + "}(" + Long.toBinaryString(fileLength) + ")";
+			result = "[" + currentDir + "]{" + "Downlaod success&sdfg45sdfgnjk4file length " + "}(" + Long.toString(fileLength) + ")";
 		} else {
 			System.out.println("Downlaod failed");
 			result = "-1";
