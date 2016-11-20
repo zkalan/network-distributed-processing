@@ -67,6 +67,7 @@ public class Handler implements Runnable {
 			pw.println("[" + System.getProperty("user.dir") + "]" + "{connect success}");
 			
 			String info = null;
+			String result = null;
 			
 			while (null != (info = br.readLine())){
 				
@@ -80,11 +81,11 @@ public class Handler implements Runnable {
 					System.out.println("quit success");
 					break;
 				} else {
-					String result = selectCommand(info);
+					result = selectCommand(info);
 					System.out.println("Server print>" + result);
 					if (result.equals("-1")) {
 						pw.println("[" + currentDir + "]{Download failed.&sdfg45sdfgnjk4}");
-					} else if (result.equals("[" + currentDir + "]{Is not File&sdfg45sdfgnjk4}")){
+					} else if (result.equals("[" + currentDir + "]{Is not File or does not exist&sdfg45sdfgnjk4}")){
 						pw.println(result);
 					} else {
 						pw.println(result);
@@ -171,7 +172,7 @@ public class Handler implements Runnable {
 			result = transFileByUdp(temp);
 			return result;
 		} else {
-			return "[" + currentDir + "]{Is not File&sdfg45sdfgnjk4}";
+			return "[" + currentDir + "]{Is not File or does not exist&sdfg45sdfgnjk4}";
 		}
 	}
 
@@ -189,7 +190,7 @@ public class Handler implements Runnable {
 		
 		//回复客户端
 		pw.println("["+ currentDir + "]" 
-				+ "{The file is in place. Available for download&sdfg45sdfgnjk4file length }" 
+				+ "{The file is in place. Available for download&sdfg45sdfgnjk4file length " + Long.toString(fileLength) + "}" 
 				+ "(" + Long.toString(fileLength) + ")");
 		System.out.println("[" + currentDir + "]{" 
 				+ "The file is in place. Available for download&sdfg45sdfgnjk4file length " 
@@ -200,7 +201,8 @@ public class Handler implements Runnable {
 		System.out.println("clientReply: " + clientReply);
 		if (clientReply != null && clientReply.equals("ok")) {
 			InetAddress toAddress = InetAddress.getByName("localhost");
-			long currentPos = 0, bytesRead;
+			long currentPos = 0;
+			int bytesRead = 0;
 			
 			byte[] msg = new byte[1024];
 			
@@ -208,11 +210,10 @@ public class Handler implements Runnable {
 				udpSocket = new DatagramSocket(8079);
 				udpSocket.connect(toAddress, uPORT);
 				
-				DatagramPacket packet = new DatagramPacket(msg, msg.length);
-				
-				
 				while (currentPos < fileLength) {
 					bytesRead = fileReader.read(msg);
+					DatagramPacket packet = new DatagramPacket(msg, bytesRead);
+
 					udpSocket.send(packet);
 					currentPos = currentPos + bytesRead;
 					if (!br.readLine().equals("ok")) {
@@ -223,15 +224,15 @@ public class Handler implements Runnable {
 				}
 				udpSocket.close();
 				fileReader.close();
+				System.out.println("Transform success");
+				result = "[" + currentDir + "]{" + "Transform success&sdfg45sdfgnjk4" + "}";
 			} catch (SocketException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			System.out.println("Downlaod success");
-			result = "[" + currentDir + "]{" + "Downlaod success&sdfg45sdfgnjk4file length " + "}(" + Long.toString(fileLength) + ")";
 		} else {
-			System.out.println("Downlaod failed");
+			System.out.println("Download failed");
 			result = "-1";
 		}
 		return result;

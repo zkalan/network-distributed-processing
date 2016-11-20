@@ -19,7 +19,7 @@ import java.net.UnknownHostException;
 
 public class Client {
 	
-	//tcp连接的端口
+	//TCP连接的端口
 	static final int PORT = 8080;
 	//udp连接的端口
 	static final String uPORT = "8081";
@@ -100,24 +100,22 @@ public class Client {
 					endIndex = serverResp.lastIndexOf("]");
 					currentDir = serverResp.substring(beginIndex,endIndex);
 					
-					String[] analyMsg = clientToServer.split("\\s+");
-					if (analyMsg[0].equals("get")){
-						beginIndex = serverResp.indexOf("(")+1;  
-						endIndex = serverResp.lastIndexOf(")");
-						if (serverResp.substring(beginIndex,endIndex).equals("-1")){
-							System.out.println("file does not exist. check the input command");
-						} else {
-							fileLength = Integer.parseInt(serverResp.substring(beginIndex,endIndex));
-							receFileByUdp(analyMsg[1],fileLength);
-						}
-					}
-					
-					
-					
 					recStr = serverResp.substring(serverResp.indexOf("{")+1,serverResp.lastIndexOf("}"))
 							.replace(root, "/")
 							.replace("&sdfg45sdfgnjk4", "\n");
 					System.out.println(recStr);
+					
+					String[] analyMsg = clientToServer.split("\\s+");
+					if (analyMsg[0].equals("get")){
+						if (serverResp.substring(serverResp.indexOf("{")+1,serverResp.lastIndexOf("}")).equals("-1")){
+							System.out.println("file does not exist. check the input command");
+						} else if (serverResp.substring(serverResp.indexOf("{")+1,serverResp.lastIndexOf("}"))
+								.equals("Is not File or does not exist&sdfg45sdfgnjk4")){
+						} else {
+							fileLength = Integer.parseInt(serverResp.substring(serverResp.indexOf("(")+1,serverResp.lastIndexOf(")")));
+							receFileByUdp(analyMsg[1],fileLength);
+						}
+					}
 				} else {
 					System.out.println("Please Input command");
 				}
@@ -206,6 +204,7 @@ public class Client {
 	
 	public void receFileByUdp(String fileName,long fileLength) throws IOException {
 		
+		String serverReply = null;
 		System.out.println("file being ready");
 		System.out.println("fileLength:" + fileLength);
 		DatagramSocket udpSocket;
@@ -229,11 +228,13 @@ public class Client {
 			if (bytesReceived == fileLength) {
 				System.out.println("File download success");
 			}
+			serverReply = br.readLine();
+			System.out.println(serverReply.substring(serverReply.indexOf("{")+1,serverReply.lastIndexOf("}")).replace("&sdfg45sdfgnjk4", "\n"));
 			//System.out.println("file download success");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
+		System.out.println("Saved as " + Class.class.getClass().getResource("/").getPath() + "/" + fileName);
 	}
 
 }
