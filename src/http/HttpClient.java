@@ -3,7 +3,7 @@ package http;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
+//import java.io.FileInputStream;
 import java.net.Socket;
 
 /**
@@ -14,10 +14,10 @@ import java.net.Socket;
 
 public class HttpClient {
 
-	/**
-	 * default HTTP port is port 80
-	 */
-	private static int port = 80;
+//	/**
+//	 * default HTTP port is port 80
+//	 */
+//	private static int port = 80;
 
 	/**
 	 * Allow a maximum buffer size of 8192 bytes
@@ -118,7 +118,36 @@ public class HttpClient {
 	 */
 	public void processPutRequest(String request) throws Exception {
 		//=======start your job here============//
-		
+		File face = new File("face.jpg");
+		byte[] fileBuffer = new byte[(int) face.length()];
+		/**
+		 * send the request to the server
+		 */
+		request += CRLF;
+		request += "Content-Length: " 
+				+ Long.toString(fileBuffer.length) + CRLF + CRLF;
+		/**
+		 * transform <string> request to <byte> buffer
+		 */
+		buffer = request.getBytes();
+		/**
+		 * send to server
+		 */
+		ostream.write(buffer, 0, request.length());
+		/**
+		 * write byte[] of file into ostream
+		 */
+		ostream.write(fileBuffer, 0, fileBuffer.length);
+		/**
+		 * clear
+		 */
+//		FileInputStream fi = new FileInputStream("face.jpg");
+//		buffer = fi.
+		ostream.flush();
+		/**
+		 * waiting for the response
+		 */
+		processResponse();
 		
 		//=======end of your job============//
 	}

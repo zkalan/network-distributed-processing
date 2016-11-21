@@ -14,10 +14,10 @@ import java.io.UnsupportedEncodingException;
 
 public class Client {
 
-	/**
-	 * default HTTP port is port 80
-	 */
-	private static int port = 80;
+//	/**
+//	 * default HTTP port is port 80
+//	 */
+//	private static int port = 80;
 
 	/**
 	 * Allow a maximum buffer size of 8192 bytes
