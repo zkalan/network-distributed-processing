@@ -140,7 +140,7 @@ public class HttpClient {
 		/**
 		 * write byte[] of file into ostream
 		 */
-		ostream.write(fileBuffer, 0, fileBuffer.length);
+		staticResourceResponse("face.jpg");
 		/**
 		 * clear
 		 */
@@ -172,7 +172,6 @@ public class HttpClient {
 				ostream.write(buffer, 0, bytesRead);
 				currentPos += bytesRead;
 			}
-			ostream.flush();
 			fis.close();
 		}
 	}
