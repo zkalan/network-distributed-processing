@@ -121,26 +121,19 @@ public class HttpClient {
 	 */
 	public void processPutRequest(String request) throws Exception {
 		//=======start your job here============//
-		File face = new File("face.jpg");
-		byte[] fileBuffer = new byte[(int) face.length()];
 		/**
-		 * send the request to the server
+		 * 
 		 */
-		request += CRLF;
-		request += "Content-Length: " 
-				+ Long.toString(fileBuffer.length) + CRLF + CRLF;
+		String[] clientInput = request.split("\\s");
+		File face = new File(clientRoot,clientInput[1]);
 		/**
-		 * transform <string> request to <byte> buffer
+		 * send header to server
 		 */
-		buffer = request.getBytes();
-		/**
-		 * send to server
-		 */
-		ostream.write(buffer, 0, request.length());
+		createPutRequestHeader(clientInput[1],face);
 		/**
 		 * write byte[] of file into ostream
 		 */
-		staticResourceResponse("face.jpg");
+		staticResourceResponse(clientInput[1]);
 		/**
 		 * clear
 		 */
@@ -173,6 +166,54 @@ public class HttpClient {
 				currentPos += bytesRead;
 			}
 			fis.close();
+		}
+	}
+	
+	/**
+	 * @throws IOException 
+	 * 
+	 */
+	public void createPutRequestHeader(String url,File file) throws IOException{
+		header.append("PUT " + url + " HTTP/1.0" + CRLF);
+		header.append("Content-Type: " + compireType(url) + CRLF);
+		header.append("Content-Length: " + Long.toString(file.length()) + CRLF + CRLF);
+		System.out.println(header.toString());
+		ostream.write(header.toString().getBytes(), 0, header.length());
+	}
+	
+	/**
+	 * 
+	 * 
+	 * @return
+	 */
+	public String compireType(String url){
+		String ends = url.substring(url.lastIndexOf(".") + 1);
+		if (ends.equals("html")){
+			return "text/html";
+		} else if (ends.equals("htm")) {
+			return "text/html";
+		} else if (ends.equals("css")) {
+			return "text/css";
+		} else if (ends.equals("png")) {
+			return "image/png";
+		} else if (ends.equals("jpg")) {
+			return "image/jpg";
+		} else if (ends.equals("xml")){
+			return "text/xml";
+		} else if (ends.equals("txt")){
+			return "text/plain";
+		} else if (ends.equals("js")){
+			return "application/x-javascript";
+		} else if (ends.equals("jpeg")){
+			return "image/jpeg";
+		} else if (ends.equals("gif")){
+			return "image/gif";
+		} else if (ends.equals("pdf")){
+			return "application/pdf";
+		} else if (ends.equals("bmp")){
+			return "image/bmp";
+		} else {
+			return null;
 		}
 	}
 	
