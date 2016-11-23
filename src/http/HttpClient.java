@@ -214,6 +214,8 @@ public class HttpClient {
 			return "image/bmp";
 		} else if (ends.equals("ico")){
 			return "image/x-icon";
+		} else if (ends.equals("mp4")){
+			return "video/mp4";
 		} else {
 			return null;
 		}

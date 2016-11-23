@@ -254,6 +254,12 @@ public class Response {
 			return "image/bmp";
 		} else if (ends.equals("ico") || hexString.equals("")){
 			return "image/x-icon";
+		} else if (ends.equals("mp4")){
+			return "video/mp4";
+		} else if (ends.equals("webm")){
+			return "video/webm";
+		} else if (ends.equals("ogg")){
+			return "video/ogg";
 		} else {
 			return null;
 		}
