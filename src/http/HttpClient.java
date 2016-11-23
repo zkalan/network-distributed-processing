@@ -212,6 +212,8 @@ public class HttpClient {
 			return "application/pdf";
 		} else if (ends.equals("bmp")){
 			return "image/bmp";
+		} else if (ends.equals("ico")){
+			return "image/x-icon";
 		} else {
 			return null;
 		}

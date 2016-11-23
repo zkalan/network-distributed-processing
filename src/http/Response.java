@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 /**
  * 这是服务器工作线程
@@ -130,9 +131,6 @@ public class Response {
 		/**
 		 * Read the contents and add it to the response StringBuffer.
 		 */
-			while (str[0].equals("PUT") && istream.read(content) != -1) {
-				//content.clone();
-			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		} 
@@ -151,6 +149,7 @@ public class Response {
 			fis = new FileInputStream(file);
 			long fileLength = fis.available();
 			createRHeader(200,"OK",file,url);
+			ostream.write(CRLF.getBytes(), 0, CRLF.length());
 			int currentPos = 0,bytesRead = 0;
 			while (currentPos < fileLength) {
 				bytesRead = fis.read(buffer);
@@ -174,7 +173,7 @@ public class Response {
 		rHeader.append("HTTP/1.1 " + String.valueOf(keyInt) + " " + keyWord + CRLF);
 		rHeader.append("Server: zhangkai/1.0.0" + CRLF);
 		rHeader.append("Content-Type: " + getContentType(file,url) + CRLF);
-		rHeader.append("Content-Length: " + Long.toString(file.length()) + CRLF + CRLF);
+		rHeader.append("Content-Length: " + Long.toString(file.length()) + CRLF);
 		System.out.println(rHeader.toString());
 		ostream.write(rHeader.toString().getBytes(), 0, rHeader.length());
 	}
@@ -253,6 +252,8 @@ public class Response {
 			return "application/pdf";
 		} else if (ends.equals("bmp") || hexString.equals("")){
 			return "image/bmp";
+		} else if (ends.equals("ico") || hexString.equals("")){
+			return "image/x-icon";
 		} else {
 			return null;
 		}
@@ -263,6 +264,43 @@ public class Response {
 			return "index.html";
 		}
 		return path;
+	}
+	
+	
+	public void putResourceResponse(String url,String fileLength) throws IOException{
+		File file = new File(serverRoot,url);
+		long length = Long.parseLong(fileLength);
+		if (file.exists()) {
+			FileOutputStream fos = new FileOutputStream(file);
+			int currentPos = 0,bytesRead = 0;
+			while (currentPos < length) {
+				bytesRead = istream.read(content);
+				fos.write(content, 0, bytesRead);
+				currentPos += bytesRead;
+			}
+			fos.close();
+			createRHeader(200,"OK",file,url);
+		} else {
+			FileOutputStream fos = new FileOutputStream(file);
+			int currentPos = 0,bytesRead = 0;
+			while (currentPos < length) {
+				bytesRead = istream.read(content);
+				fos.write(content, 0, bytesRead);
+				currentPos += bytesRead;
+			}
+			fos.close();
+			createRHeader(201,"Created",file,url);
+		}
+		rHeader.append("Location: " + "http://127.0.0.1" + url + CRLF + CRLF);
+		ostream.flush();
+	}
+	
+	public void notAllowedMethod() throws IOException{
+		rHeader.append("HTTP/1.1 405 Method Not Allowed" + CRLF);
+		rHeader.append("Server: zhangkai/1.0.0" + CRLF);
+		rHeader.append("Allow: GET,PUT" + CRLF + CRLF);
+		ostream.write(rHeader.toString().getBytes(), 0, rHeader.length());
+		ostream.flush();
 	}
 	
 	/**
