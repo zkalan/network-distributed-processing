@@ -17,7 +17,7 @@ import java.net.Socket;
 public class Handler implements Runnable {
 	
 	private Socket socket;
-	String serverRoot = "D:\\pavo\\www";
+	String serverRoot = "D:\\myServer";
 	
 	/**
 	 * 初始化

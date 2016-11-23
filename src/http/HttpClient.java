@@ -3,6 +3,8 @@ package http;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 //import java.io.FileInputStream;
 import java.net.Socket;
 
@@ -19,6 +21,7 @@ public class HttpClient {
 //	 */
 //	private static int port = 80;
 
+	String clientRoot = "C:\\Users\\zk\\workspace\\networkdp\\client";
 	/**
 	 * Allow a maximum buffer size of 8192 bytes
 	 */
@@ -150,6 +153,28 @@ public class HttpClient {
 		processResponse();
 		
 		//=======end of your job============//
+	}
+	
+	/**
+	 * 
+	 * @param url
+	 * @throws IOException
+	 */
+	public void staticResourceResponse(String url) throws IOException{
+		FileInputStream fis = null;
+		File file = new File(clientRoot,url);
+		if (file.exists()) {
+			fis = new FileInputStream(file);
+			long fileLength = fis.available();
+			int currentPos = 0,bytesRead = 0;
+			while (currentPos < fileLength) {
+				bytesRead = fis.read(buffer);
+				ostream.write(buffer, 0, bytesRead);
+				currentPos += bytesRead;
+			}
+			ostream.flush();
+			fis.close();
+		}
 	}
 	
 	/**
