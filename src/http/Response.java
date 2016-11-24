@@ -53,10 +53,6 @@ public class Response {
 	 */
 	StringBuffer rHeader = null;
 	/**
-	 * StringBuffer storing the response.
-	 */
-	private StringBuffer response = null;
-	/**
 	 * byte[] content
 	 */
 	byte[] content;
@@ -78,7 +74,6 @@ public class Response {
 		buffer = new byte[buffer_size];
 		header = new StringBuffer();
 		rHeader = new StringBuffer();
-		response = new StringBuffer();
 		contentLength = -1;
 		content = new byte[buffer_size];
 		this.socket = socket;
@@ -278,7 +273,7 @@ public class Response {
 			return "video/mp4";
 		} else if (ends.equals("webm")){
 			return "video/webm";
-		} else if (ends.equals("ogg")){
+		} else if (ends.equals("ogv")){
 			return "video/ogg";
 		} else {
 			return null;
