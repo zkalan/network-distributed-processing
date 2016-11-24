@@ -195,11 +195,26 @@ public class Client {
 	            n++;
 	        }
 	    }
-	    if (str.length() == n) {
+	    if (str.length() == (n + occurXieGang(str))) {
 	    	return false;
 	    } else {
 	    	return true;
 	    }
+	}
+	
+	public int occurXieGang(String str){
+	    int pos = -2;
+	    int n = 0;
+	    while (pos != -1) {
+	        if (pos == -2) {
+	            pos = -1;
+	        }
+	        pos = str.indexOf("/", pos + 1);
+	        if (pos != -1) {
+	            n++;
+	        }
+	    }
+	    return n;
 	}
 	
 	public void receFileByUdp(String fileName,long fileLength) throws IOException {

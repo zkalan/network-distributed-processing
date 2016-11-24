@@ -145,10 +145,31 @@ public class Response {
 	public void staticResourceResponse(String url) throws IOException{
 		FileInputStream fis = null;
 		File file = new File(serverRoot,url);
-		if (file.exists()) {
+		int key = 0;
+		if (file.exists() && !file.isDirectory()) {
+			key = 200;
 			fis = new FileInputStream(file);
 			long fileLength = fis.available();
-			createRHeader(200,"OK",file,url);
+			createRHeader(key,"OK",file,url);
+			System.out.println(rHeader.toString());
+			ostream.write(CRLF.getBytes(), 0, CRLF.length());
+			int currentPos = 0,bytesRead = 0;
+			while (currentPos < fileLength) {
+				bytesRead = fis.read(buffer);
+				ostream.write(buffer, 0, bytesRead);
+				currentPos += bytesRead;
+			}
+			ostream.flush();
+			fis.close();
+		} else {
+			key = 404;
+			File error = new File(serverRoot,"404.html");
+			fis = new FileInputStream(error);
+			long fileLength = fis.available();
+			createRHeader(key,"Not Found",error,"404.html");
+			String info = "Location: http://127.0.0.1/404.html" + CRLF;
+			ostream.write(info.getBytes(), 0, info.length());
+			System.out.println(rHeader.toString());
 			ostream.write(CRLF.getBytes(), 0, CRLF.length());
 			int currentPos = 0,bytesRead = 0;
 			while (currentPos < fileLength) {
@@ -174,7 +195,6 @@ public class Response {
 		rHeader.append("Server: zhangkai/1.0.0" + CRLF);
 		rHeader.append("Content-Type: " + getContentType(file,url) + CRLF);
 		rHeader.append("Content-Length: " + Long.toString(file.length()) + CRLF);
-		System.out.println(rHeader.toString());
 		ostream.write(rHeader.toString().getBytes(), 0, rHeader.length());
 	}
 	
@@ -298,6 +318,7 @@ public class Response {
 			createRHeader(201,"Created",file,url);
 		}
 		rHeader.append("Location: " + "http://127.0.0.1" + url + CRLF + CRLF);
+		System.out.println(rHeader.toString());
 		ostream.flush();
 	}
 	
