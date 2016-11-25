@@ -33,7 +33,7 @@ public class Response {
 	/**
 	 * Response is stored in a byte array.
 	 */
-	private byte[] buffer;
+	byte[] buffer;
 	/**
 	 * Output stream to the socket.
 	 */
@@ -52,6 +52,8 @@ public class Response {
 	 * StringBuffer response the header
 	 */
 	StringBuffer rHeader = null;
+	
+	StringBuffer postContent = null;
 	/**
 	 * byte[] content
 	 */
@@ -259,6 +261,8 @@ public class Response {
 			return "text/plain";
 		} else if (ends.equals("js") || hexString.equals("")){
 			return "application/x-javascript";
+		} else if (ends.equals("jsp") || hexString.equals("")){
+			return "text/html";
 		} else if (ends.equals("jpeg") || hexString.equals("")){
 			return "image/jpeg";
 		} else if (ends.equals("gif") || hexString.equals("")){
@@ -317,10 +321,35 @@ public class Response {
 		ostream.flush();
 	}
 	
+	/**
+	 * <em>processResponse</em> process the server response.
+	 * 
+	 */
+	public void processPOSTResponse(String contentLength) throws Exception {
+
+		long length = Long.parseLong(contentLength);
+		System.out.println("###############" + length);
+		int currentPos = 0,bytesRead = 0;
+		/**
+		 * Read the contents and add it to the response StringBuffer.
+		 */
+		while (currentPos < length) {
+			bytesRead = istream.read(buffer);
+			System.out.println("###############" + bytesRead);
+			postContent.append(new String(buffer,"iso-8859-1"));
+			currentPos += bytesRead;
+		}
+		System.out.println("###############" + postContent.toString());
+	}
+	
+	public void sendMail(){
+		
+	}
+	
 	public void notAllowedMethod() throws IOException{
 		rHeader.append("HTTP/1.1 405 Method Not Allowed" + CRLF);
 		rHeader.append("Server: zhangkai/1.0.0" + CRLF);
-		rHeader.append("Allow: GET,PUT" + CRLF + CRLF);
+		rHeader.append("Allow: GET,PUT,POST" + CRLF + CRLF);
 		ostream.write(rHeader.toString().getBytes(), 0, rHeader.length());
 		ostream.flush();
 	}

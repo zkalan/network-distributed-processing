@@ -204,6 +204,8 @@ public class HttpClient {
 			return "text/plain";
 		} else if (ends.equals("js")){
 			return "application/x-javascript";
+		} else if (ends.equals("jsp")){
+			return "text/html";
 		} else if (ends.equals("jpeg")){
 			return "image/jpeg";
 		} else if (ends.equals("gif")){

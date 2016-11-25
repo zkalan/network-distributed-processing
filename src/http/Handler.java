@@ -19,6 +19,8 @@ public class Handler implements Runnable {
 	private Socket socket;
 	String serverRoot = "D:\\myServer";
 	
+	static private String CRLF = "\r\n";
+	
 	/**
 	 * 初始化
 	 * @param socket
@@ -47,6 +49,13 @@ public class Handler implements Runnable {
 							break;
 						}
 					}
+				} else if (head[0].equals("POST")){
+					for (int i = 0;i < head.length; i++) {
+						if (head[i].equals("Content-Length:")) {
+							responseServer.processPOSTResponse(head[i+1]);
+							break;
+						}
+					}
 				} else {
 					responseServer.notAllowedMethod();
 				}
@@ -54,6 +63,9 @@ public class Handler implements Runnable {
 				responseServer.close();
 			//}
 			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 	
