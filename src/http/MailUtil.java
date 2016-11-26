@@ -8,6 +8,9 @@ import javax.mail.Multipart;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.*;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 public class MailUtil {
@@ -18,7 +21,7 @@ public class MailUtil {
     String user = "m15991693793@163.com"; // 用户名
     String pwd = ""; // 密码
     private String subject = "来自张凯的服务器"; // 邮件标题
-    private String content = "";
+    private String content;
     
     public String getTo(){
     	return to;
@@ -32,8 +35,9 @@ public class MailUtil {
     	return content;
     }
     
-    public void setContent(String content){
-    	this.content = content;
+    public void setContent(byte[] content) throws IOException{
+    	this.content = new String(content,"utf-8");
+    	System.out.println("########################" + this.content);
     }
 
     public void setAddress(String from, String to, String subject) {
@@ -95,7 +99,7 @@ public class MailUtil {
         }
     }
 
-    public void main(String to,String content) {
+    public void main(String to,byte[] content) throws IOException {
         MailUtil cn = new MailUtil();
         cn.setTo(to);
         cn.setContent(content);

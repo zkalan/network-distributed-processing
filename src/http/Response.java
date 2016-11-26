@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 
 /**
@@ -53,7 +54,7 @@ public class Response {
 	 */
 	StringBuffer rHeader = null;
 	
-	StringBuffer postContent = null;
+	StringBuilder postContent = new StringBuilder();
 	/**
 	 * byte[] content
 	 */
@@ -263,6 +264,8 @@ public class Response {
 			return "application/x-javascript";
 		} else if (ends.equals("jsp") || hexString.equals("")){
 			return "text/html";
+		} else if (ends.equals("jsp") || hexString.equals("")){
+			return "text/html";
 		} else if (ends.equals("jpeg") || hexString.equals("")){
 			return "image/jpeg";
 		} else if (ends.equals("gif") || hexString.equals("")){
@@ -328,21 +331,73 @@ public class Response {
 	public void processPOSTResponse(String contentLength) throws Exception {
 
 		long length = Long.parseLong(contentLength);
-		System.out.println("###############" + length);
+		System.out.println("Text Length:" + length);
 		int currentPos = 0,bytesRead = 0;
+		String temp;
 		/**
 		 * Read the contents and add it to the response StringBuffer.
 		 */
 		while (currentPos < length) {
 			bytesRead = istream.read(buffer);
-			System.out.println("###############" + bytesRead);
-			postContent.append(new String(buffer,"iso-8859-1"));
+			System.out.println("Readed Length:" + bytesRead);
+			temp = new String(buffer,"utf-8");
+			postContent.append(temp);
 			currentPos += bytesRead;
 		}
-		System.out.println("###############" + postContent.toString());
+		System.out.println(postContent.toString());
+		String[] message = postContent.toString().replace(CRLF, " ").split(" +");
+		/**
+		 * 分隔符meassage[0]
+		 */
+		String receiver = null;
+		StringBuilder words = new StringBuilder();
+		for (int i = 0;i < message.length;i++) {
+			if (message[i].equals("name=\"emailaddr\"")) {
+				receiver = message[i+1];
+			} else if (message[i].equals("name=\"words\"")) {
+				for (int j = i + 1; !message[j].equals(message[0])&& j < message.length;j++) {
+					words.append(message[j] + " ");
+				}
+				i = message.length;
+			}
+		}
+		while (true){
+			sendMail(receiver,words.toString().getBytes());
+			break;
+		}
 	}
 	
-	public void sendMail(){
+	public void sendSuccess() throws IOException{
+		int key;
+		FileInputStream fis = null;
+		key = 200;
+		File success = new File(serverRoot,"success.html");
+		fis = new FileInputStream(success);
+		long fileLength = fis.available();
+		createRHeader(key,"OK",success,"success.html");
+		String info = "Location: http://127.0.0.1/success.html" + CRLF;
+		ostream.write(info.getBytes(), 0, info.length());
+		System.out.println(rHeader.toString());
+		ostream.write(CRLF.getBytes(), 0, CRLF.length());
+		int currentPos = 0,bytesRead = 0;
+		while (currentPos < fileLength) {
+			bytesRead = fis.read(buffer);
+			ostream.write(buffer, 0, bytesRead);
+			currentPos += bytesRead;
+		}
+		ostream.flush();
+		fis.close();
+	}
+	
+	/**
+	 * send email
+	 * @throws IOException 
+	 */
+	public void sendMail(String receiver,byte[] words) throws IOException{
+		
+		MailUtil email = new MailUtil();
+		
+		email.main(receiver, words);
 		
 	}
 	

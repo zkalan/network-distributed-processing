@@ -53,9 +53,11 @@ public class Handler implements Runnable {
 					for (int i = 0;i < head.length; i++) {
 						if (head[i].equals("Content-Length:")) {
 							responseServer.processPOSTResponse(head[i+1]);
-							break;
+							i = head.length;
 						}
 					}
+					responseServer.sendSuccess();
+					
 				} else {
 					responseServer.notAllowedMethod();
 				}
@@ -65,7 +67,6 @@ public class Handler implements Runnable {
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 	
