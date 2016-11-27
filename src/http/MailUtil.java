@@ -1,6 +1,8 @@
 package http;
 /**
- * 代码来自 http://www.cnblogs.com/sunhaoyu/p/5660853.html
+ * 
+ * 部分代码参考
+ * http://www.cnblogs.com/sunhaoyu/p/5660853.html
  */
 import javax.mail.BodyPart;
 import javax.mail.Message;
@@ -10,7 +12,6 @@ import javax.mail.Transport;
 import javax.mail.internet.*;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 public class MailUtil {
@@ -37,7 +38,8 @@ public class MailUtil {
     
     public void setContent(byte[] content) throws IOException{
     	this.content = new String(content,"utf-8");
-    	System.out.println("########################" + this.content);
+    	System.out.println("######to###########" + this.to);
+    	System.out.println("######content###########" + this.content);
     }
 
     public void setAddress(String from, String to, String subject) {
@@ -108,7 +110,6 @@ public class MailUtil {
         
         /**
          * 设置smtp服务器以及邮箱的帐号和密码
-         * 用QQ 邮箱作为发生者不好使 （原因不明）
          * 163 邮箱可以，但是必须开启  POP3/SMTP服务 和 IMAP/SMTP服务
          * 因为程序属于第三方登录，所有登录密码必须使用163的授权码
          */

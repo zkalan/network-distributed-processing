@@ -4,7 +4,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 
 /**
@@ -243,6 +242,10 @@ public class Response {
 	 * 
 	 * @param hexString
 	 * @return
+	 * 依次为服务器支持的文件类型
+	 * 用以返回Content-Type
+	 * 文本文件：解析文件后缀名
+	 * 媒体文件：解析文件头4个Byte
 	 */
 	public String compireType(String hexString,String url){
 		String ends = url.substring(url.lastIndexOf(".") + 1);
@@ -287,6 +290,11 @@ public class Response {
 		}
 	}
 	
+	/**
+	 * 对网站首页链接进行跳转
+	 * @param path
+	 * @return
+	 */
 	public String getURL(String path){
 		if (path.equals("/")){
 			return "index.html";
@@ -295,12 +303,22 @@ public class Response {
 	}
 	
 	
+	/**
+	 * 接受PUT请求提交的内容
+	 * 当路径存在时：更新文件
+	 * 当路径不存在时：创建文件
+	 * @param url
+	 * @param fileLength
+	 * @throws IOException
+	 */
 	public void putResourceResponse(String url,String fileLength) throws IOException{
 		File file = new File(serverRoot,url);
 		long length = Long.parseLong(fileLength);
+		//文件存在时
 		if (file.exists()) {
 			FileOutputStream fos = new FileOutputStream(file);
 			int currentPos = 0,bytesRead = 0;
+			//接受浏览器提交的字节流
 			while (currentPos < length) {
 				bytesRead = istream.read(content);
 				fos.write(content, 0, bytesRead);
@@ -311,6 +329,7 @@ public class Response {
 		} else {
 			FileOutputStream fos = new FileOutputStream(file);
 			int currentPos = 0,bytesRead = 0;
+			//接受浏览器提交的字节流
 			while (currentPos < length) {
 				bytesRead = istream.read(content);
 				fos.write(content, 0, bytesRead);
@@ -319,13 +338,16 @@ public class Response {
 			fos.close();
 			createRHeader(201,"Created",file,url);
 		}
+		//添加报文尾部
 		rHeader.append("Location: " + "http://127.0.0.1" + url + CRLF + CRLF);
 		System.out.println(rHeader.toString());
 		ostream.flush();
 	}
 	
 	/**
-	 * <em>processResponse</em> process the server response.
+	 * 处理POST请求
+	 * 主要是解析出receiver和words
+	 * 专门的函数
 	 * 
 	 */
 	public void processPOSTResponse(String contentLength) throws Exception {
@@ -345,28 +367,50 @@ public class Response {
 			currentPos += bytesRead;
 		}
 		System.out.println(postContent.toString());
-		String[] message = postContent.toString().replace(CRLF, " ").split(" +");
+		
+		//下面的处理将会抹去所有换行
+		//String[] message = postContent.toString().replace(CRLF, " ").split(" +");
+		
+		//下面的方法可以处理换行
+		String[] message = postContent.toString().split(CRLF);		
+		
 		/**
 		 * 分隔符meassage[0]
 		 */
 		String receiver = null;
 		StringBuilder words = new StringBuilder();
+//		for (int i = 0;i < message.length;i++) {
+//			if (message[i].equals("name=\"emailaddr\"")) {
+//				receiver = message[i+1];
+//			} else if (message[i].equals("name=\"words\"")) {
+//				for (int j = i + 1; !message[j].equals(message[0])&& j < message.length;j++) {
+//					words.append(message[j] + " ");
+//				}
+//				i = message.length;
+//			}
+//		}
+		
 		for (int i = 0;i < message.length;i++) {
-			if (message[i].equals("name=\"emailaddr\"")) {
-				receiver = message[i+1];
-			} else if (message[i].equals("name=\"words\"")) {
-				for (int j = i + 1; !message[j].equals(message[0])&& j < message.length;j++) {
-					words.append(message[j] + " ");
-				}
-				i = message.length;
+		if (message[i].equals("Content-Disposition: form-data; name=\"emailaddr\"")) {
+			receiver = message[i+2];
+		} else if (message[i].equals("Content-Disposition: form-data; name=\"words\"")) {
+			for (int j = i + 1; !message[j].equals(message[0])&& j < message.length;j++) {
+				words.append(message[j] + CRLF);
 			}
+			i = message.length;
 		}
+	}
 		while (true){
 			sendMail(receiver,words.toString().getBytes());
 			break;
 		}
 	}
 	
+	/**
+	 * 类比于GET请求的返回函数
+	 * 仅仅返回POST请求下的success.html页面
+	 * @throws IOException
+	 */
 	public void sendSuccess() throws IOException{
 		int key;
 		FileInputStream fis = null;
@@ -401,6 +445,10 @@ public class Response {
 		
 	}
 	
+	/**
+	 * 返回405错误
+	 * @throws IOException
+	 */
 	public void notAllowedMethod() throws IOException{
 		rHeader.append("HTTP/1.1 405 Method Not Allowed" + CRLF);
 		rHeader.append("Server: zhangkai/1.0.0" + CRLF);
@@ -411,7 +459,7 @@ public class Response {
 	
 	/**
 	 * @throws IOException 
-	 * 
+	 * 关闭所有连接
 	 */
 	public void close() throws IOException{
 		istream.close();
