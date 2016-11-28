@@ -13,7 +13,7 @@ public class HttpServer{
 	//线程池
 	ExecutorService executorService;
 	//单个处理器线程池工作线程的数量
-	final static int POOL_SIZE = 6;
+	final static int POOL_SIZE = 4;
 	
 	/**
 	 * 启动服务的函数
